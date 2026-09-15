@@ -1,0 +1,62 @@
+<exemplars note="Past posts by the author. Match their voice, not their content.">
+{% for p in exemplars %}
+<post{% if p.date %} date="{{ p.date }}"{% endif %} source="{{ p.source }}">
+{{ p.text }}
+</post>
+{% endfor %}
+</exemplars>
+
+{% if feedback %}
+<recent_feedback note="How the author changed or rejected earlier drafts. Learn from it.">
+{% for f in feedback %}
+- {{ f }}
+{% endfor %}
+</recent_feedback>
+{% endif %}
+
+<research_brief>
+Topic: {{ brief.topic }}
+
+Summary: {{ brief.summary }}
+
+Key facts:
+{% for f in brief.key_facts %}
+- {{ f }}
+{% endfor %}
+
+Sources:
+{% for s in brief.sources %}
+- {{ s.title }} ({{ s.url }}): {{ s.key_points | join('; ') }}
+{% endfor %}
+
+Conventional takes (avoid):
+{% for c in brief.conventional_takes %}
+- {{ c }}
+{% endfor %}
+
+Contrarian angles:
+{% for c in brief.contrarian_angles %}
+- {{ c }}
+{% endfor %}
+
+Practitioner hooks:
+{% for c in brief.practitioner_hooks %}
+- {{ c }}
+{% endfor %}
+</research_brief>
+
+{% if previous %}
+<previous_draft>
+{{ previous }}
+</previous_draft>
+
+<evaluator_notes>
+{% for n in notes %}
+- {{ n }}
+{% endfor %}
+</evaluator_notes>
+
+Revise the previous draft to address every evaluator note while keeping what already works. Return the full revised post.
+{% else %}
+Write the post.
+{% endif %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Job {{ job_id }} · postgen{% endblock %}
+{% block head %}
+{% if job.status == "running" %}<meta http-equiv="refresh" content="4">{% endif %}
+{% if redirect %}<meta http-equiv="refresh" content="1;url={{ redirect }}">{% endif %}
+{% endblock %}
+{% block content %}
+<h1>{{ job.kind }} job #{{ job_id }} <span class="pill {{ job.status }}">{{ job.status }}</span></h1>
+<p class="muted">started {{ job.started_at }}</p>
+<pre class="log">{% for line in job.log %}{{ line }}
+{% endfor %}</pre>
+{% if job.error %}<p class="error">{{ job.error }}</p>{% endif %}
+{% if redirect %}<p>Done. <a href="{{ redirect }}">Open result</a></p>{% endif %}
+{% endblock %}

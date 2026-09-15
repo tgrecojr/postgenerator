@@ -1,0 +1,39 @@
+<voice_profile>
+{{ voice }}
+</voice_profile>
+
+<exemplars>
+{% for p in exemplars %}
+<post>
+{{ p.text }}
+</post>
+{% endfor %}
+</exemplars>
+
+<research_brief>
+Topic: {{ brief.topic }}
+Summary: {{ brief.summary }}
+Key facts:
+{% for f in brief.key_facts %}
+- {{ f }}
+{% endfor %}
+Source excerpts:
+{% for s in brief.sources %}
+- {{ s.title }}: {{ s.key_points | join('; ') }}
+{% endfor %}
+Conventional takes:
+{% for c in brief.conventional_takes %}
+- {{ c }}
+{% endfor %}
+</research_brief>
+
+<draft revision="{{ revision }}">
+{{ draft }}
+</draft>
+
+Claims the writer says it relied on:
+{% for c in claims %}
+- {{ c }}
+{% endfor %}
+
+Evaluate the draft.

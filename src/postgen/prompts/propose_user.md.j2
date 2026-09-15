@@ -1,0 +1,34 @@
+<profile>
+Name: {{ profile.name }}
+Headline: {{ profile.headline }}
+Audience: {{ profile.audience }}
+Goals: {{ profile.goals }}
+{% if profile.off_limits %}
+Off limits: {{ profile.off_limits | join('; ') }}
+{% endif %}
+</profile>
+
+<topic_map>
+{% for area in topics.areas %}
+## {{ area.name }}
+{{ area.description }}
+{% for angle in area.example_angles %}
+- {{ angle }}
+{% endfor %}
+
+{% endfor %}
+</topic_map>
+
+<recently_used_titles cooldown_days="{{ cooldown_days }}">
+{% for t in recent %}
+- {{ t }}
+{% else %}
+(none)
+{% endfor %}
+</recently_used_titles>
+
+{% if requested %}
+The author asked for a post about: "{{ requested }}". Shape that into a sharp, specific angle inside the topic map (pick the best-fitting area) and propose it.
+{% else %}
+Propose the single best angle to write next.
+{% endif %}

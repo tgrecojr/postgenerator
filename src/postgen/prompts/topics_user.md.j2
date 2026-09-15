@@ -1,0 +1,15 @@
+<profile>
+Name: {{ profile.name }}
+Headline: {{ profile.headline }}
+
+About:
+{{ profile.about }}
+
+Audience: {{ profile.audience }}
+Goals: {{ profile.goals }}
+{% if profile.off_limits %}
+Off limits: {{ profile.off_limits | join('; ') }}
+{% endif %}
+</profile>
+
+Derive the topic map.

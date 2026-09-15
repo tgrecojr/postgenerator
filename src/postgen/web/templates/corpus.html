@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Corpus · postgen{% endblock %}
+{% block content %}
+<h1>Voice corpus <span class="muted">({{ posts | length }} posts)</span></h1>
+<form method="post" action="/corpus" class="add-post">
+  <textarea name="text" rows="8" placeholder="Paste one of your past LinkedIn posts" required></textarea>
+  <div class="actions">
+    <input type="text" name="topic" placeholder="topic (optional)">
+    <button type="submit">Add to corpus</button>
+  </div>
+</form>
+<ul class="cards">
+{% for p in posts %}
+  <li class="card">
+    <div class="meta"><span class="pill {{ p.source }}">{{ p.source }}</span>{% if p.date %}<span class="muted">{{ p.date }}</span>{% endif %}{% if p.topic %}<span class="muted">· {{ p.topic }}</span>{% endif %}<span class="muted small">{{ p.slug }}.md</span></div>
+    <pre class="post-text">{{ p.text }}</pre>
+  </li>
+{% endfor %}
+</ul>
+{% endblock %}

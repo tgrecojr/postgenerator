@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ draft.topic_title }} · postgen{% endblock %}
+{% block content %}
+<a class="back" href="/drafts?status=pending">← drafts</a>
+<h1>{{ draft.topic_title }}</h1>
+<div class="meta">
+  <span class="pill area">{{ draft.topic_area }}</span>
+  {% if draft.overall is not none %}<span class="pill score s{{ (draft.overall // 2) | int }}">{{ "%.1f" | format(draft.overall) }}</span>{% endif %}
+  <span class="pill {{ draft.decision or 'pending' }}">{{ draft.decision or "pending" }}</span>
+  <span class="muted">run #{{ draft.run_id }} · revision {{ draft.revision }} · {{ draft.created_at[:16].replace("T", " ") }}</span>
+</div>
+
+<div class="cols">
+<section class="post">
+  {% if draft.decision %}
+    <h2>{{ "Final text" if draft.decision != "rejected" else "Rejected draft" }}</h2>
+    <pre class="post-text" id="final">{{ draft.final_text or draft.rendered }}</pre>
+    {% if draft.reason %}<p class="reason"><strong>Reason:</strong> {{ draft.reason }}</p>{% endif %}
+    <button class="secondary" onclick="copyText('final')">Copy to clipboard</button>
+  {% else %}
+    <form method="post" action="/drafts/{{ draft.id }}/review" class="review">
+      <h2>Draft</h2>
+      <textarea name="final_text" id="editor" rows="18">{{ draft.rendered }}</textarea>
+      <input type="text" name="reason" placeholder="Why did you change or reject it? (feeds the voice profile)">
+      <div class="actions">
+        <button type="submit" name="decision" value="approved" class="ok">Approve</button>
+        <button type="submit" name="decision" value="rejected" class="danger">Reject</button>
+        <button type="button" class="secondary" onclick="copyText('editor')">Copy</button>
+      </div>
+      <p class="hint">Approve saves the textarea content. If you edited it, it's recorded as "edited" and the diff teaches the writer.</p>
+    </form>
+  {% endif %}
+</section>
+
+<aside class="side">
+  {% if draft.evaluation %}
+  <h2>Evaluation</h2>
+  <table class="scores">
+    {% for name in ["originality", "voice_match", "engagement", "factual_grounding", "linkedin_fit"] %}
+    {% set dim = draft.evaluation[name] %}
+    <tr><th>{{ name.replace("_", " ") }}</th><td class="num">{{ "%.1f" | format(dim.score) }}</td></tr>
+    <tr class="rationale"><td colspan="2">{{ dim.rationale }}</td></tr>
+    {% endfor %}
+    <tr class="total"><th>overall</th><td class="num">{{ "%.1f" | format(draft.evaluation.overall) }} · {{ draft.evaluation.verdict }}</td></tr>
+  </table>
+  {% if draft.evaluation.revision_notes %}
+  <h3>Evaluator notes</h3>
+  <ul>{% for n in draft.evaluation.revision_notes %}<li>{{ n }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% endif %}
+
+  {% if siblings | length > 1 %}
+  <h3>Revisions in this run</h3>
+  <ul class="plain">
+  {% for s in siblings | reverse %}
+    <li>{% if s.id == draft.id %}<strong>{% endif %}<a href="/drafts/{{ s.id }}">rev {{ s.revision }}</a> · {{ "%.1f" | format(s.overall or 0) }}{% if s.is_final %} (final){% endif %}{% if s.id == draft.id %}</strong>{% endif %}</li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if research %}
+  <details>
+    <summary><h2>Research brief</h2></summary>
+    <p>{{ research.summary }}</p>
+    <h3>Key facts</h3><ul>{% for f in research.key_facts %}<li>{{ f }}</li>{% endfor %}</ul>
+    <h3>Sources</h3>
+    <ul>{% for s in research.sources %}<li><a href="{{ s.url }}" rel="noopener noreferrer" target="_blank">{{ s.title }}</a></li>{% endfor %}</ul>
+    <h3>Contrarian angles</h3><ul>{% for f in research.contrarian_angles %}<li>{{ f }}</li>{% endfor %}</ul>
+    <h3>Conventional takes (avoided)</h3><ul>{% for f in research.conventional_takes %}<li>{{ f }}</li>{% endfor %}</ul>
+  </details>
+  {% endif %}
+  {% if run.usage_json %}<p class="muted small">usage: {{ run.usage_json }}</p>{% endif %}
+</aside>
+</div>
+<script>
+function copyText(id) {
+  const el = document.getElementById(id);
+  const text = el.value !== undefined ? el.value : el.textContent;
+  navigator.clipboard.writeText(text).then(() => alert("Copied"));
+}
+</script>
+{% endblock %}

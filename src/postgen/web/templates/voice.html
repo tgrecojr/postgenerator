@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Voice · postgen{% endblock %}
+{% block content %}
+<h1>Voice profile</h1>
+<form method="post" action="/voice/rebuild" class="inline">
+  <button type="submit" {% if running %}disabled{% endif %}>Rebuild from corpus + feedback</button>
+  {% if voice %}<span class="muted">built from corpus hash {{ voice.corpus_hash[:10] }}, {{ voice.feedback_count }} feedback items</span>{% endif %}
+</form>
+{% if voice %}
+<article class="voice">
+  <p class="lead">{{ voice.profile.summary }}</p>
+  {% for title, items in [("Tone", voice.profile.tone), ("Structure patterns", voice.profile.structure_patterns), ("Sentence style", voice.profile.sentence_style), ("Vocabulary", voice.profile.vocabulary), ("Formatting", voice.profile.formatting), ("Do", voice.profile.do), ("Don't", voice.profile.dont), ("Corrections learned from feedback", voice.profile.corrections)] %}
+  <h2>{{ title }}</h2>
+  <ul>{% for i in items %}<li>{{ i }}</li>{% else %}<li class="muted">(none yet)</li>{% endfor %}</ul>
+  {% endfor %}
+</article>
+{% else %}
+<p class="empty">No voice profile yet. Add posts to the corpus, then rebuild (or run a generation; it builds one automatically).</p>
+{% endif %}
+{% endblock %}

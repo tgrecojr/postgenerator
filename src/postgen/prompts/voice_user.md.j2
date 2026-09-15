@@ -1,0 +1,41 @@
+<author>
+Name: {{ profile.name }}
+Headline: {{ profile.headline }}
+</author>
+
+<posts count="{{ posts | length }}">
+{% for p in posts %}
+<post{% if p.date %} date="{{ p.date }}"{% endif %} source="{{ p.source }}">
+{{ p.text }}
+</post>
+{% endfor %}
+</posts>
+
+<feedback count="{{ feedback | length }}">
+{% for f in feedback %}
+<item decision="{{ f.decision }}">
+<draft>
+{{ f.rendered }}
+</draft>
+{% if f.final_text %}
+<author_version>
+{{ f.final_text }}
+</author_version>
+{% endif %}
+{% if f.reason %}
+<author_reason>{{ f.reason }}</author_reason>
+{% endif %}
+</item>
+{% endfor %}
+</feedback>
+
+{% if previous_corrections %}
+<previous_corrections>
+{% for c in previous_corrections %}
+- {{ c }}
+{% endfor %}
+</previous_corrections>
+Carry forward previous corrections that are still supported; refine or drop ones the new evidence contradicts.
+{% endif %}
+
+Produce the voice profile.

@@ -1,0 +1,12 @@
+# Copy to data/profile.yaml and fill in from your LinkedIn profile.
+name: "Your Name"
+headline: >-
+  AI Application Security | Product Security | Agentic Secure Code
+about: |
+  Paste your LinkedIn "About" section here, verbatim. The topic map is derived from it,
+  so include the areas you actually want to be known for.
+audience: "Security engineers, AppSec leaders, and engineering managers shipping AI features"
+goals: "Share practitioner insight from real engagements; start useful conversations; no hype"
+off_limits:
+  - "Anything identifying my employer's internal systems, incidents, or customers"
+  - "Vendor endorsements"

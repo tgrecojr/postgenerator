@@ -1,0 +1,19 @@
+services:
+  postgen:
+    build: .
+    image: postgen:local
+    env_file: .env
+    ports:
+      - "127.0.0.1:8790:8790"   # localhost only; front with Cloudflare Zero Trust / Tailscale if remote
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
+  # One-shot generation, e.g. from cron:  docker compose run --rm generate
+  generate:
+    image: postgen:local
+    env_file: .env
+    volumes:
+      - ./data:/data
+    command: ["run"]
+    profiles: ["cli"]

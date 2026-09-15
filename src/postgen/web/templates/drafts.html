@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Drafts · postgen{% endblock %}
+{% block content %}
+<h1>Drafts <span class="muted">({{ status }})</span></h1>
+<p class="filters">
+  {% for s in ["pending", "approved", "edited", "rejected", "all"] %}
+  <a href="/drafts?status={{ s }}" {% if s == status %}class="active"{% endif %}>{{ s }}</a>
+  {% endfor %}
+</p>
+{% if not drafts %}
+<p class="empty">Nothing here yet. Use <strong>Generate</strong> above or run <code>postgen run</code>.</p>
+{% endif %}
+<ul class="cards">
+{% for d in drafts %}
+  <li class="card">
+    <a class="title" href="/drafts/{{ d.id }}">{{ d.topic_title or "(untitled)" }}</a>
+    <div class="meta">
+      <span class="pill area">{{ d.topic_area }}</span>
+      {% if d.overall is not none %}<span class="pill score s{{ (d.overall // 2) | int }}">{{ "%.1f" | format(d.overall) }}</span>{% endif %}
+      <span class="pill {{ d.decision or 'pending' }}">{{ d.decision or "pending" }}</span>
+      <span class="muted">{{ d.created_at[:16].replace("T", " ") }}</span>
+    </div>
+    <p class="preview">{{ d.rendered[:220] }}{% if d.rendered | length > 220 %}…{% endif %}</p>
+  </li>
+{% endfor %}
+</ul>
+{% endblock %}

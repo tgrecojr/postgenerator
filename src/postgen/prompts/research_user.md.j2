@@ -1,0 +1,16 @@
+<angle>
+Area: {{ proposal.area }}
+Title: {{ proposal.title }}
+Why now: {{ proposal.why_now }}
+</angle>
+
+<queries>
+{% for q in proposal.search_queries %}
+- {{ q }}
+{% endfor %}
+</queries>
+
+Audience for the eventual post: {{ profile.audience }}
+Today's date: {{ today }}
+
+Research this angle and produce the report.
