@@ -51,3 +51,33 @@ def test_unknown_decision_raises(settings: Settings, store: Store) -> None:
     except ValueError:
         return
     raise AssertionError("expected ValueError")
+
+
+def test_re_edit_replaces_corpus_entry(settings: Settings, store: Store) -> None:
+    d = store.get_draft(_draft(store))
+    assert d is not None
+    before = len(Corpus(settings.corpus_dir).posts())
+    record_decision(settings, store, d, "approved", "First version")
+    first = store.get_draft(d.id)
+    assert first is not None and first.corpus_path
+    record_decision(settings, store, first, "approved", "Second version", "reworded")
+    second = store.get_draft(d.id)
+    assert second is not None
+    assert second.decision == "edited" and second.final_text == "Second version"
+    assert second.reason == "reworded" and second.corpus_path
+    posts = Corpus(settings.corpus_dir).posts()
+    assert len(posts) == before + 1
+    assert [p.text for p in posts if p.source == "edited"] == ["Second version"]
+
+
+def test_reject_after_approve_removes_corpus_entry(settings: Settings, store: Store) -> None:
+    d = store.get_draft(_draft(store))
+    assert d is not None
+    before = len(Corpus(settings.corpus_dir).posts())
+    record_decision(settings, store, d, "approved")
+    approved = store.get_draft(d.id)
+    assert approved is not None
+    record_decision(settings, store, approved, "rejected", reason="changed my mind")
+    row = store.get_draft(d.id)
+    assert row is not None and row.decision == "rejected" and row.corpus_path is None
+    assert len(Corpus(settings.corpus_dir).posts()) == before

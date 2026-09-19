@@ -12,14 +12,24 @@
   <a class="brand" href="/">postgen</a>
   <nav>
     <a href="/drafts?status=pending">Pending</a>
-    <a href="/drafts?status=all">All drafts</a>
+    <a href="/drafts?status=all">Drafts</a>
     <a href="/corpus">Corpus</a>
     <a href="/voice">Voice</a>
+    <a href="/topics">Topics</a>
+    <a href="/profile">Profile</a>
+    <a href="/jobs">Jobs</a>
+    <a href="/settings">Settings</a>
   </nav>
+  {% if not ready %}
+  <a class="setup-link" href="/setup">Finish setup to generate →</a>
+  {% elif running %}
+  <a class="setup-link" href="/jobs/{{ active_job }}">A job is running →</a>
+  {% else %}
   <form class="generate" method="post" action="/generate">
-    <input type="text" name="topic" placeholder="optional topic request" {% if running %}disabled{% endif %}>
-    <button type="submit" {% if running %}disabled title="A job is already running"{% endif %}>Generate</button>
+    <input type="text" name="topic" placeholder="optional topic request">
+    <button type="submit">Generate</button>
   </form>
+  {% endif %}
 </header>
 <main>
 {% block content %}{% endblock %}

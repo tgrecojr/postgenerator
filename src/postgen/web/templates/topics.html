@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Topics · postgen{% endblock %}
+{% block content %}
+<h1>Topic map</h1>
+<form method="post" action="/topics/rebuild" class="inline">
+  <button type="submit" {% if running %}disabled{% endif %}>{{ "Rebuild" if topics else "Build" }} from profile</button>
+  <span class="muted">Derives subject areas and example angles from your headline and About section. Existing edits are replaced.</span>
+</form>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+{% if topics %}
+<div class="cols">
+<section>
+{% for area in topics.areas %}
+  <article class="card">
+    <h2>{{ area.name }}</h2>
+    <p>{{ area.description }}</p>
+    <ul>{% for a in area.example_angles %}<li>{{ a }}</li>{% endfor %}</ul>
+  </article>
+{% endfor %}
+</section>
+<aside class="side">
+  <h2>Edit as YAML</h2>
+  <form method="post" action="/topics">
+    <textarea name="yaml_text" rows="24" class="mono">{{ yaml_text }}</textarea>
+    <div class="actions"><button type="submit" class="ok">Save</button></div>
+    <p class="hint">Add, rename or remove areas and angles to steer topic selection. Validated on save.</p>
+  </form>
+</aside>
+</div>
+{% elif not error %}
+<p class="empty">No topic map yet. Fill in your <a href="/profile">profile</a>, then build one here, or let the first generation build it.</p>
+{% endif %}
+{% endblock %}

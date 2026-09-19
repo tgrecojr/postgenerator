@@ -12,23 +12,30 @@
 
 <div class="cols">
 <section class="post">
+  {% macro review_form(text, reason, reviewed) %}
+    <form method="post" action="/drafts/{{ draft.id }}/review" class="review">
+      <textarea name="final_text" id="editor" rows="18">{{ text }}</textarea>
+      <input type="text" name="reason" value="{{ reason or '' }}" placeholder="Why did you change or reject it? (feeds the voice profile)">
+      <div class="actions">
+        <button type="submit" name="decision" value="approved" class="ok">{{ "Save" if reviewed else "Approve" }}</button>
+        <button type="submit" name="decision" value="rejected" class="danger">Reject</button>
+        <button type="button" class="secondary" onclick="copyText('editor')">Copy</button>
+      </div>
+      <p class="hint">{% if reviewed %}Save replaces the earlier decision and its corpus entry.{% else %}Approve saves the textarea content.{% endif %} If the text differs from the generated draft, it's recorded as "edited" and the diff teaches the writer.</p>
+    </form>
+  {% endmacro %}
   {% if draft.decision %}
     <h2>{{ "Final text" if draft.decision != "rejected" else "Rejected draft" }}</h2>
     <pre class="post-text" id="final">{{ draft.final_text or draft.rendered }}</pre>
     {% if draft.reason %}<p class="reason"><strong>Reason:</strong> {{ draft.reason }}</p>{% endif %}
     <button class="secondary" onclick="copyText('final')">Copy to clipboard</button>
+    <details class="reopen">
+      <summary><h2>Edit or change decision</h2></summary>
+      {{ review_form(draft.final_text or draft.rendered, draft.reason, true) }}
+    </details>
   {% else %}
-    <form method="post" action="/drafts/{{ draft.id }}/review" class="review">
-      <h2>Draft</h2>
-      <textarea name="final_text" id="editor" rows="18">{{ draft.rendered }}</textarea>
-      <input type="text" name="reason" placeholder="Why did you change or reject it? (feeds the voice profile)">
-      <div class="actions">
-        <button type="submit" name="decision" value="approved" class="ok">Approve</button>
-        <button type="submit" name="decision" value="rejected" class="danger">Reject</button>
-        <button type="button" class="secondary" onclick="copyText('editor')">Copy</button>
-      </div>
-      <p class="hint">Approve saves the textarea content. If you edited it, it's recorded as "edited" and the diff teaches the writer.</p>
-    </form>
+    <h2>Draft</h2>
+    {{ review_form(draft.rendered, "", false) }}
   {% endif %}
 </section>
 

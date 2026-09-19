@@ -1,0 +1,68 @@
+name: Supply chain scan
+
+on:
+  workflow_call:
+    secrets:
+      SOCKET_SECURITY_API_KEY:
+        # Not marked required: bot-authored PRs (Dependabot security updates,
+        # Renovate) run in an isolated context without access to repo secrets.
+        # With required: true the reusable-workflow call fails before any job
+        # runs; required: false lets the rest of the scan run, and the Socket
+        # step below self-skips when the secret is absent.
+        required: false
+
+jobs:
+  scan:
+    name: Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Job-level env so the Socket step's `if:` can test for the secret's
+    # presence (a step's own env isn't visible to its own `if:`, and the
+    # `secrets` context can't be referenced in an `if:` directly).
+    env:
+      SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install Python
+        run: uv python install 3.14
+
+      - name: Export locked dependencies to requirements.txt
+        # --no-emit-project excludes postgen itself (it requires Python >=3.14,
+        # which pip-audit's runner venv isn't); we only audit third-party deps.
+        run: uv export --frozen --no-hashes --no-emit-project --output-file requirements-lock.txt
+
+      - name: Socket Security scan
+        # Advisory, not a hard gate: Socket's API has been intermittently timing
+        # out at scan-create for this org, which would otherwise block publishing.
+        # OSV (below) and pip-audit remain hard gates for CVE/advisory coverage;
+        # Socket adds typosquat/malware heuristics on top when it's reachable.
+        if: ${{ env.SOCKET_SECURITY_API_KEY != '' }}
+        continue-on-error: true
+        run: |
+          repo_slug="${GITHUB_REPOSITORY##*/}"
+          branch_name="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          npx -y @socketsecurity/cli@latest scan create \
+            --org grecolabs \
+            --repo "${repo_slug}" \
+            --branch "${branch_name}" \
+            --report \
+            ./
+
+      - name: OSV scan (uv.lock)
+        uses: google/osv-scanner-action/osv-scanner-action@v2.5.1
+        with:
+          scan-args: |-
+            --lockfile=uv.lock
+
+      - name: pip-audit
+        uses: pypa/gh-action-pip-audit@v1.1.0
+        with:
+          inputs: requirements-lock.txt

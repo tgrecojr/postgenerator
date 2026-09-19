@@ -59,11 +59,31 @@ runs at low effort.
 - The writer prompt also receives the most recent `POSTGEN_RECENT_FEEDBACK_COUNT`
   feedback notes directly, so a correction takes effect on the very next run.
 
+## Runtime shape
+
+One process: uvicorn serving FastAPI. Long work (generate, voice rebuild, topic rebuild)
+runs on a single daemon thread via `services/jobs.py`; only one job at a time. Each job is a
+row in the `jobs` table with its log, so history survives restarts, and on startup any job
+or run still marked `running` is flagged failed ("interrupted"). The SQLite connection is
+shared between the request thread and the job thread behind an `RLock`, in WAL mode.
+
+`services/setup.py` is the readiness gate: API key present, profile valid, corpus non-empty
+(plus a Tavily key when that provider is selected). Until it passes, `/` redirects to
+`/setup` and `/generate` refuses to start a job.
+
+The container is a shell-less Chainguard python image running as nonroot; there is no CLI inside it. Everything an operator
+needs is a page: Profile, Corpus (add / edit / delete / bulk import), Topics (view / edit
+YAML / rebuild), Voice, Jobs, Settings (effective config, masked secrets, key test), and a
+zip export for backups.
+
 ## Trust boundaries
 
 - Search results and page content are third-party input. Every prompt that sees them
   states they are data, not instructions. The evaluator is a separate call with a separate
   system prompt, so a compromised brief cannot also grade itself.
-- The web UI is single-user, localhost-bound, and rejects cross-site `POST`s via
-  `Sec-Fetch-Site`. Put it behind Zero Trust / Tailscale before exposing it.
+- The web UI is single-user and has no auth. It rejects cross-site `POST`s via
+  `Sec-Fetch-Site` and unknown `Host` headers via `POSTGEN_ALLOWED_HOSTS` (DNS rebinding).
+  Compose publishes on loopback only; put it behind Zero Trust / Tailscale to expose it.
+- Corpus slugs from URLs are validated against a strict pattern and resolved only inside
+  the corpus directory; uploads are size-capped.
 - Secrets come only from the environment; nothing under `data/` is committed.

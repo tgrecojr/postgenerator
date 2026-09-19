@@ -14,6 +14,8 @@ import yaml
 
 FRONT_MATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 TOKEN = re.compile(r"[a-z0-9][a-z0-9+\-#]{2,}")
+SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$")
+BATCH_SEPARATOR = re.compile(r"^\s*\*{3,}\s*$", re.MULTILINE)
 STOPWORDS = frozenset(
     [
         "the",
@@ -119,15 +121,77 @@ class Corpus:
             h.update(p.read_bytes())
         return h.hexdigest()
 
-    def add(self, text: str, source: str, topic: str | None = None) -> Path:
+    def _unique_path(self, stem: str) -> Path:
+        """Timestamped file name that never overwrites an existing post."""
         stamp = datetime.now(UTC).strftime("%Y-%m-%d-%H%M%S")
-        path = self.directory / f"{stamp}-{source}.md"
-        meta = {"date": stamp[:10], "source": source}
+        path = self.directory / f"{stamp}-{stem}.md"
+        n = 1
+        while path.exists():
+            n += 1
+            path = self.directory / f"{stamp}-{stem}-{n}.md"
+        return path
+
+    def add(self, text: str, source: str, topic: str | None = None) -> Path:
+        path = self._unique_path(source)
+        meta = {"date": path.name[:10], "source": source}
         if topic:
             meta["topic"] = topic
         front = yaml.safe_dump(meta, sort_keys=True).strip()
         path.write_text(f"---\n{front}\n---\n\n{text.strip()}\n", encoding="utf-8")
         return path
+
+    def remove(self, path: Path | str) -> None:
+        """Delete a corpus file previously returned by `add`; ignores files outside the corpus."""
+        target = Path(path)
+        if target.parent.resolve() == self.directory.resolve():
+            target.unlink(missing_ok=True)
+
+    def _path_for(self, slug: str) -> Path | None:
+        if not SLUG.match(slug):
+            return None
+        path = self.directory / f"{slug}.md"
+        return path if path.is_file() else None
+
+    def get(self, slug: str) -> Post | None:
+        path = self._path_for(slug)
+        return _parse(path) if path else None
+
+    def update(self, slug: str, text: str, topic: str | None) -> Post:
+        """Replace a post's body and topic, keeping its other front matter (date, source)."""
+        path = self._path_for(slug)
+        if path is None:
+            raise KeyError(slug)
+        meta = dict(_parse(path).meta)
+        meta.pop("topic", None)
+        if topic:
+            meta["topic"] = topic
+        front = yaml.safe_dump(meta, sort_keys=True).strip() if meta else ""
+        head = f"---\n{front}\n---\n\n" if front else ""
+        path.write_text(f"{head}{text.strip()}\n", encoding="utf-8")
+        return _parse(path)
+
+    def delete(self, slug: str) -> bool:
+        path = self._path_for(slug)
+        if path is None:
+            return False
+        path.unlink()
+        return True
+
+    def import_text(self, text: str) -> int:
+        """Add several pasted posts separated by a line of three or more asterisks."""
+        parts = [p.strip() for p in BATCH_SEPARATOR.split(text) if p.strip()]
+        for part in parts:
+            self.add(part, source="seed")
+        return len(parts)
+
+    def import_file(self, filename: str, content: str) -> Path:
+        """Import one uploaded file. Files with front matter are kept verbatim."""
+        if FRONT_MATTER.match(content):
+            stem = re.sub(r"[^A-Za-z0-9._-]+", "-", Path(filename).stem).strip("-.") or "post"
+            path = self._unique_path(stem[:60])
+            path.write_text(content.strip() + "\n", encoding="utf-8")
+            return path
+        return self.add(content, source="seed")
 
     def most_similar(self, query: str, k: int) -> list[Post]:
         """BM25-lite ranking of posts against a query; falls back to newest when no overlap."""

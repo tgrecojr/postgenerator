@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Setup · postgen{% endblock %}
+{% block content %}
+<h1>Setup</h1>
+<p class="muted">Everything required for a generation run. Items marked optional are built automatically on the first run.</p>
+<ul class="checklist">
+{% for c in checks %}
+  <li class="{{ 'ok' if c.ok else ('todo' if c.required else 'optional') }}">
+    <span class="mark">{{ "✓" if c.ok else ("!" if c.required else "·") }}</span>
+    <a href="{{ c.href }}"><strong>{{ c.label }}</strong></a>{% if not c.required %} <span class="muted small">optional</span>{% endif %}
+    <span class="detail">{{ c.detail }}</span>
+  </li>
+{% endfor %}
+</ul>
+{% if ready %}
+<p class="ok-note">Ready. Use <strong>Generate</strong> in the header, or go to the <a href="/">dashboard</a>.</p>
+{% else %}
+<p class="hint">Secrets are never stored by the app. Set <code>ANTHROPIC_API_KEY</code> in the container environment (compose <code>env_file</code>) and restart.</p>
+{% endif %}
+{% endblock %}

@@ -39,3 +39,9 @@ def test_most_similar_on_empty_corpus(tmp_path: Path) -> None:
 
 def test_tokenize_drops_stopwords_and_short_tokens() -> None:
     assert tokenize("The AI is not a control") == ["control"]
+
+
+def test_add_never_overwrites_within_same_second(tmp_path: Path) -> None:
+    corpus = Corpus(tmp_path / "c")
+    paths = {corpus.add(f"post {i}", source="seed") for i in range(3)}
+    assert len(paths) == 3 and len(corpus.posts()) == 3

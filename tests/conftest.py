@@ -135,7 +135,13 @@ def data_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def settings(data_dir: Path) -> Settings:
-    return Settings(data_dir=data_dir, _env_file=None)  # type: ignore[call-arg]
+    return Settings(  # type: ignore[call-arg]
+        data_dir=data_dir,
+        allowed_hosts="testserver,localhost",
+        anthropic_api_key="sk-ant-test-key-0000",
+        tavily_api_key=None,
+        _env_file=None,
+    )
 
 
 @pytest.fixture

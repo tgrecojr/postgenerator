@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Settings · postgen{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+<p class="muted">Values come from the container environment (<code>POSTGEN_*</code> variables and <code>.env</code> via compose). Change them there and restart; secrets are never stored by the app.</p>
+<form method="post" action="/settings/test" class="inline">
+  <button type="submit">Test API connection</button>
+  <span class="muted">Makes one small request with the configured key and default model.</span>
+</form>
+{% if result %}<p class="{{ 'ok-note' if result.ok else 'error' }}">{{ result.message }}</p>{% endif %}
+<table class="settings">
+{% for r in rows %}
+  <tr><th><code>{{ r.env }}</code></th><td>{{ r.value }}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

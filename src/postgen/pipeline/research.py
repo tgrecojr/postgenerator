@@ -34,6 +34,7 @@ def research_anthropic(
         render("research_system"),
         render("research_user", proposal=proposal, profile=profile, today=_today()),
         max_searches=settings.research_max_searches,
+        effort="medium",
     )
     if not report.strip():
         raise RuntimeError("research step returned an empty report")
@@ -96,6 +97,7 @@ def research_tavily(
             results=results,
         ),
         ResearchBrief,
+        effort="medium",
     )
 
 

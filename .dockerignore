@@ -1,4 +1,5 @@
 .git/
+.github/
 .env
 .env.*
 !.env.example
@@ -15,7 +16,12 @@ build/
 .idea/
 .vscode/
 .DS_Store
-.claude/settings.local.json
+.claude/
+CLAUDE.md
 CLAUDE.local.md
 tests/
 docs/
+scripts/
+examples/
+compose.yaml
+Dockerfile

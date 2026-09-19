@@ -13,12 +13,11 @@ dependencies = [
     "python-multipart",
     "pydantic",
     "pydantic-settings",
-    "typer",
     "pyyaml",
     "tavily-python",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "ruff",
     "pytest",
@@ -28,7 +27,7 @@ dev = [
 ]
 
 [project.scripts]
-postgen = "postgen.cli:app"
+postgen = "postgen.cli:main"
 
 [build-system]
 requires = ["hatchling"]

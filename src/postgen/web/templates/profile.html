@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Profile · postgen{% endblock %}
+{% block content %}
+<h1>Profile</h1>
+<p class="muted">Who you are on LinkedIn. The topic map and every prompt are built from this.</p>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<form method="post" action="/profile" class="card form">
+  <label>Name <input type="text" name="name" value="{{ form.name }}" placeholder="Your Name"></label>
+  <label>Headline <span class="req">required</span>
+    <input type="text" name="headline" value="{{ form.headline }}" placeholder="{{ placeholders.headline }}" required></label>
+  <label>About <span class="req">required</span>
+    <textarea name="about" rows="10" placeholder="{{ placeholders.about }}" required>{{ form.about }}</textarea></label>
+  <label>Audience <input type="text" name="audience" value="{{ form.audience }}" placeholder="Security engineers, AppSec leaders, and engineering managers"></label>
+  <label>Goals <input type="text" name="goals" value="{{ form.goals }}" placeholder="Share practitioner insight; build credibility; start useful conversations"></label>
+  <label>Off limits <span class="muted small">one per line</span>
+    <textarea name="off_limits" rows="4" placeholder="{{ placeholders.off_limits }}">{{ form.off_limits }}</textarea></label>
+  <div class="actions"><button type="submit" class="ok">{{ "Save" if exists else "Create profile" }}</button></div>
+</form>
+{% endblock %}

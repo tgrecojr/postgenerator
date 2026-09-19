@@ -2,18 +2,13 @@ services:
   postgen:
     build: .
     image: postgen:local
-    env_file: .env
+    env_file: .env                 # ANTHROPIC_API_KEY and any POSTGEN_* overrides
     ports:
-      - "127.0.0.1:8790:8790"   # localhost only; front with Cloudflare Zero Trust / Tailscale if remote
+      - "127.0.0.1:8790:8790"      # localhost only; front with Tailscale / Cloudflare Zero Trust
     volumes:
-      - ./data:/data
+      - postgen-data:/data         # profile, corpus, drafts DB, voice profile
     restart: unless-stopped
+    stop_grace_period: 60s         # let an in-flight generation record its outcome
 
-  # One-shot generation, e.g. from cron:  docker compose run --rm generate
-  generate:
-    image: postgen:local
-    env_file: .env
-    volumes:
-      - ./data:/data
-    command: ["run"]
-    profiles: ["cli"]
+volumes:
+  postgen-data:

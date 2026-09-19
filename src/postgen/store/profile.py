@@ -10,6 +10,8 @@ from pydantic import BaseModel, Field
 
 from postgen.pipeline.models import TopicMap, VoiceProfile
 
+TOPICS_HEADER = "# Generated from your profile. Edit freely; rebuild from the Topics page.\n"
+
 
 class Profile(BaseModel):
     name: str = "The author"
@@ -30,11 +32,18 @@ class Profile(BaseModel):
 
 def load_profile(path: Path) -> Profile:
     if not path.exists():
-        raise FileNotFoundError(
-            f"{path} not found. Copy examples/profile.yaml to {path} and fill in your details."
-        )
+        raise FileNotFoundError(f"{path} not found. Fill in the Profile page first.")
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     return Profile.model_validate(data)
+
+
+def save_profile(path: Path, profile: Profile) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "# Your LinkedIn profile. Edited from the Profile page in the web UI.\n"
+        + yaml.safe_dump(profile.model_dump(), sort_keys=False, allow_unicode=True),
+        encoding="utf-8",
+    )
 
 
 def load_topics(path: Path) -> TopicMap | None:
@@ -44,13 +53,24 @@ def load_topics(path: Path) -> TopicMap | None:
     return TopicMap.model_validate(data)
 
 
+def topics_to_yaml(topics: TopicMap) -> str:
+    return yaml.safe_dump(topics.model_dump(), sort_keys=False, allow_unicode=True)
+
+
+def topics_from_yaml(text: str) -> TopicMap:
+    """Parse user-edited YAML into a TopicMap; raises ValueError on bad input."""
+    try:
+        data = yaml.safe_load(text) or {}
+    except yaml.YAMLError as exc:
+        raise ValueError(f"invalid YAML: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValueError("expected a mapping with an 'areas' list")
+    return TopicMap.model_validate(data)
+
+
 def save_topics(path: Path, topics: TopicMap) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        "# Generated from profile.yaml by `postgen topics`. Edit freely; re-run to regenerate.\n"
-        + yaml.safe_dump(topics.model_dump(), sort_keys=False, allow_unicode=True),
-        encoding="utf-8",
-    )
+    path.write_text(TOPICS_HEADER + topics_to_yaml(topics), encoding="utf-8")
 
 
 class VoiceState(BaseModel):

@@ -5,7 +5,7 @@ import pytest
 from pydantic import BaseModel
 
 from postgen.config import Settings
-from postgen.llm import FALLBACK_BETA, LLM, LLMRefusalError
+from postgen.llm import FALLBACK_BETA, LLM, RESEARCH_TIMEOUT_SECONDS, LLMRefusalError
 
 
 class Out(BaseModel):
@@ -30,15 +30,39 @@ def _response(
     )
 
 
+class FakeStream:
+    def __init__(self, response: Any) -> None:
+        self.response = response
+
+    def __enter__(self) -> FakeStream:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
+
+    def get_final_message(self) -> Any:
+        return self.response
+
+
 class FakeClient:
     def __init__(self, responses: list[Any]) -> None:
         self.responses = responses
         self.calls: list[dict[str, Any]] = []
-        self.beta = SimpleNamespace(messages=SimpleNamespace(parse=self._call, create=self._call))
+        self.options: list[dict[str, Any]] = []
+        self.beta = SimpleNamespace(
+            messages=SimpleNamespace(parse=self._call, create=self._call, stream=self._stream)
+        )
+
+    def with_options(self, **kwargs: Any) -> FakeClient:
+        self.options.append(kwargs)
+        return self
 
     def _call(self, **kwargs: Any) -> Any:
         self.calls.append(kwargs)
         return self.responses.pop(0)
+
+    def _stream(self, **kwargs: Any) -> FakeStream:
+        return FakeStream(self._call(**kwargs))
 
 
 def test_structured_uses_step_model_effort_and_fallbacks(settings: Settings) -> None:
@@ -93,3 +117,5 @@ def test_research_with_search_resumes_after_pause_turn(settings: Settings) -> No
     assert client.calls[0]["tools"][0]["max_uses"] == 3
     # second call replays the paused assistant turn
     assert client.calls[1]["messages"][1]["role"] == "assistant"
+    # long agentic turn: streamed, hard ceiling, and never auto-retried (each retry bills)
+    assert client.options == [{"timeout": RESEARCH_TIMEOUT_SECONDS, "max_retries": 0}]

@@ -1,3 +1,6 @@
+import sqlite3
+from pathlib import Path
+
 from postgen.store.db import Store
 
 
@@ -38,3 +41,17 @@ def test_review_upsert(store: Store) -> None:
     store.add_review(d, "rejected", None, "changed my mind")
     row = store.get_draft(d)
     assert row is not None and row.decision == "rejected" and row.reason == "changed my mind"
+
+
+def test_migrates_reviews_table_from_older_schema(tmp_path: Path) -> None:
+    path = tmp_path / "old.sqlite"
+    conn = sqlite3.connect(path)
+    conn.executescript(
+        "CREATE TABLE reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, draft_id INTEGER NOT NULL"
+        " UNIQUE, created_at TEXT NOT NULL, decision TEXT NOT NULL, final_text TEXT, reason TEXT);"
+    )
+    conn.close()
+    store = Store(path)
+    cols = {r[1] for r in store.conn.execute("PRAGMA table_info(reviews)")}
+    assert "corpus_path" in cols
+    store.close()

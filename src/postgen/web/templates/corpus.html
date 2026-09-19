@@ -2,18 +2,44 @@
 {% block title %}Corpus · postgen{% endblock %}
 {% block content %}
 <h1>Voice corpus <span class="muted">({{ posts | length }} posts)</span></h1>
-<form method="post" action="/corpus" class="add-post">
+{% if imported %}<p class="ok-note">Imported {{ imported }} post{{ "" if imported == 1 else "s" }}.</p>{% endif %}
+<div class="cols">
+<form method="post" action="/corpus" class="add-post card">
+  <h2>Add one post</h2>
   <textarea name="text" rows="8" placeholder="Paste one of your past LinkedIn posts" required></textarea>
   <div class="actions">
     <input type="text" name="topic" placeholder="topic (optional)">
     <button type="submit">Add to corpus</button>
   </div>
 </form>
+<form method="post" action="/corpus/import" enctype="multipart/form-data" class="add-post card">
+  <h2>Bulk import</h2>
+  <textarea name="text" rows="5" placeholder="Paste several posts, separated by a line containing only ***"></textarea>
+  <div class="actions">
+    <input type="file" name="files" multiple accept=".md,.txt,text/plain,text/markdown">
+    <button type="submit">Import</button>
+  </div>
+  <p class="hint">Files exported from this app (with front matter) are restored as-is; plain text files become seed posts.</p>
+</form>
+</div>
 <ul class="cards">
 {% for p in posts %}
   <li class="card">
     <div class="meta"><span class="pill {{ p.source }}">{{ p.source }}</span>{% if p.date %}<span class="muted">{{ p.date }}</span>{% endif %}{% if p.topic %}<span class="muted">· {{ p.topic }}</span>{% endif %}<span class="muted small">{{ p.slug }}.md</span></div>
     <pre class="post-text">{{ p.text }}</pre>
+    <details>
+      <summary>Edit</summary>
+      <form method="post" action="/corpus/{{ p.slug }}/edit" class="review">
+        <textarea name="text" rows="8" required>{{ p.text }}</textarea>
+        <div class="actions">
+          <input type="text" name="topic" value="{{ p.topic or '' }}" placeholder="topic (optional)">
+          <button type="submit" class="ok">Save</button>
+        </div>
+      </form>
+      <form method="post" action="/corpus/{{ p.slug }}/delete" class="inline" onsubmit="return confirm('Delete this post from the corpus?')">
+        <button type="submit" class="danger">Delete</button>
+      </form>
+    </details>
   </li>
 {% endfor %}
 </ul>

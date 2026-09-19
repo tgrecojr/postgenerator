@@ -23,6 +23,9 @@ def record_decision(
 ) -> str:
     """Persist the decision. Approved/edited posts join the corpus so the voice adapts.
 
+    A draft can be reviewed any number of times; each call replaces the previous decision
+    and the corpus entry it produced, so re-editing never duplicates a post in the corpus.
+
     Returns the effective decision ("approved" is downgraded to "edited" if the text changed).
     """
     if decision not in DECISIONS:
@@ -30,9 +33,12 @@ def record_decision(
     text = _normalise(final_text or draft.rendered)
     if decision == "approved" and text != _normalise(draft.rendered):
         decision = "edited"
+    corpus = Corpus(settings.corpus_dir)
+    if draft.corpus_path:
+        corpus.remove(draft.corpus_path)
     if decision == "rejected":
         store.add_review(draft.id, decision, None, reason or None)
         return decision
-    store.add_review(draft.id, decision, text, reason or None)
-    Corpus(settings.corpus_dir).add(text, source=decision, topic=draft.topic_title)
+    path = corpus.add(text, source=decision, topic=draft.topic_title)
+    store.add_review(draft.id, decision, text, reason or None, corpus_path=str(path))
     return decision

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Jobs · postgen{% endblock %}
+{% block content %}
+<h1>Jobs</h1>
+{% if not jobs %}<p class="empty">No jobs yet.</p>{% endif %}
+<ul class="cards">
+{% for j in jobs %}
+  <li class="card row">
+    <span class="pill {{ j.status }}">{{ j.status }}</span>
+    <a class="title" href="/jobs/{{ j.id }}">{{ j.kind }} #{{ j.id }}</a>
+    <span class="muted">{{ j.started_at[:16].replace("T", " ") }} · {{ j.elapsed }}</span>
+    {% if j.status == "done" and j.result %}<a href="{{ j.result }}">open result</a>{% endif %}
+    {% if j.error %}<span class="error small">{{ j.error }}</span>{% endif %}
+  </li>
+{% endfor %}
+</ul>
+{% endblock %}

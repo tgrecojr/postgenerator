@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · postgen{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="tiles">
+  <a class="tile" href="/drafts?status=pending"><span class="big">{{ pending }}</span>pending draft{{ "" if pending == 1 else "s" }}</a>
+  <div class="tile"><span class="big">{{ usage.runs }}</span>runs</div>
+  <div class="tile"><span class="big">{{ "{:,}".format(usage.input_tokens + usage.cache_read) }}</span>input tokens ({{ "{:,}".format(usage.cache_read) }} cached)</div>
+  <div class="tile"><span class="big">{{ "{:,}".format(usage.output_tokens) }}</span>output tokens</div>
+</div>
+
+<h2>Recent runs</h2>
+{% if not runs %}<p class="empty">No runs yet. Use <strong>Generate</strong> above to write your first draft.</p>{% endif %}
+<ul class="cards">
+{% for r in runs %}
+  <li class="card row">
+    <span class="pill {{ r.status }}">{{ r.status }}</span>
+    {% if r.draft_id %}<a class="title" href="/drafts/{{ r.draft_id }}">{{ r.topic_title or "(untitled)" }}</a>{% else %}<span class="title">{{ r.topic_title or "(no topic)" }}</span>{% endif %}
+    {% if r.decision %}<span class="pill {{ r.decision }}">{{ r.decision }}</span>{% endif %}
+    <span class="muted">{{ r.created_at[:16].replace("T", " ") }}</span>
+    {% if r.error %}<span class="error small">{{ r.error }}</span>{% endif %}
+  </li>
+{% endfor %}
+</ul>
+
+<h2>Recent jobs <a class="small" href="/jobs">all →</a></h2>
+<ul class="cards">
+{% for j in jobs %}
+  <li class="card row">
+    <span class="pill {{ j.status }}">{{ j.status }}</span>
+    <a class="title" href="/jobs/{{ j.id }}">{{ j.kind }} #{{ j.id }}</a>
+    <span class="muted">{{ j.started_at[:16].replace("T", " ") }} · {{ j.elapsed }}</span>
+    {% if j.error %}<span class="error small">{{ j.error }}</span>{% endif %}
+  </li>
+{% else %}
+  <li class="empty">No jobs yet.</li>
+{% endfor %}
+</ul>
+
+<p class="muted small">Backup: <a href="/export">download data as zip</a> (profile, corpus, drafts database, voice profile).</p>
+{% endblock %}

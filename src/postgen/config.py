@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # Paths
     data_dir: Path = Field(default=Path("data"))
 
+    # Anthropic credentials (read from .env; SDK resolution chain is the fallback)
+    anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
+
     # Models (per-step override)
     model: str = DEFAULT_MODEL
     model_topics: str | None = None
@@ -42,9 +45,15 @@ class Settings(BaseSettings):
     exemplar_count: int = 4
     recent_feedback_count: int = 8
 
-    # Web UI
+    # Web UI. allowed_hosts is a comma-separated Host-header allowlist ("*" disables it);
+    # add your Tailscale / reverse-proxy hostname when exposing the UI beyond localhost.
     host: str = "127.0.0.1"
     port: int = 8790
+    allowed_hosts: str = "localhost,127.0.0.1"
+
+    @property
+    def allowed_host_list(self) -> list[str]:
+        return [h.strip() for h in self.allowed_hosts.split(",") if h.strip()]
 
     def model_for(self, step: str) -> str:
         override: str | None = getattr(self, f"model_{step}", None)

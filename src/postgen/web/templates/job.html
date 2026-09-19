@@ -1,13 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Job {{ job_id }} · postgen{% endblock %}
+{% block title %}Job {{ job.id }} · postgen{% endblock %}
 {% block head %}
 {% if job.status == "running" %}<meta http-equiv="refresh" content="4">{% endif %}
 {% if redirect %}<meta http-equiv="refresh" content="1;url={{ redirect }}">{% endif %}
 {% endblock %}
 {% block content %}
-<h1>{{ job.kind }} job #{{ job_id }} <span class="pill {{ job.status }}">{{ job.status }}</span></h1>
-<p class="muted">started {{ job.started_at }}</p>
-<pre class="log">{% for line in job.log %}{{ line }}
+<a class="back" href="/jobs">← jobs</a>
+<h1>{{ job.kind }} job #{{ job.id }} <span class="pill {{ job.status }}">{{ job.status }}</span></h1>
+<p class="muted">started {{ job.started_at.replace("T", " ") }} · {{ job.elapsed }}{% if job.run_id %} · run #{{ job.run_id }}{% endif %}</p>
+{% if job.status == "running" %}
+<p class="hint">Research on a large model can take several minutes. This page refreshes itself; you can close it and find the draft under <a href="/drafts?status=pending">Pending</a> when it finishes.</p>
+{% endif %}
+<pre class="log">{% for line in job.log_lines %}{{ line }}
 {% endfor %}</pre>
 {% if job.error %}<p class="error">{{ job.error }}</p>{% endif %}
 {% if redirect %}<p>Done. <a href="{{ redirect }}">Open result</a></p>{% endif %}
