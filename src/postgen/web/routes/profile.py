@@ -14,7 +14,7 @@ from postgen.web.routes.common import ctx, page, redirect
 router = APIRouter()
 
 PLACEHOLDERS = {
-    "headline": "AI Application Security | Product Security | Agentic Secure Code",
+    "headline": "Staff Engineer | Platform Reliability | Developer Experience",
     "about": "Paste your LinkedIn About section verbatim. The topic map is derived from it,"
     " so include the areas you actually want to be known for.",
     "off_limits": "One per line, e.g.\nAnything identifying my employer's internal systems"

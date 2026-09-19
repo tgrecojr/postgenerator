@@ -51,7 +51,7 @@ def test_profile_form_roundtrip(client: TestClient, settings: Settings) -> None:
     assert r.status_code == 303
     profile = load_profile(settings.profile_path)
     assert profile.headline == "Head" and profile.off_limits == ["employer", "vendors"]
-    assert "Security engineers" in profile.audience  # default kept when blank
+    assert "Practitioners" in profile.audience  # default kept when blank
     page = client.get("/profile").text
     assert 'value="Head"' in page and "About me" in page
 
@@ -142,7 +142,7 @@ def test_corpus_bulk_import(client: TestClient, settings: Settings) -> None:
 
 
 def test_settings_page_masks_secrets(client: TestClient, settings: Settings) -> None:
-    settings.anthropic_api_key = "sk-ant-secret-value-1234"
+    settings.anthropic_api_key = "fake-secret-value-1234"
     page = client.get("/settings").text
     assert "ANTHROPIC_API_KEY" in page and "…1234" in page and "secret-value" not in page
     assert "POSTGEN_MODEL" in page and settings.model in page

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class TopicArea(BaseModel):
-    name: str = Field(description="Short subject-area name, e.g. 'AI Application Security'")
+    name: str = Field(description="Short subject-area name, e.g. 'Platform Engineering'")
     description: str = Field(description="One or two sentences on what this area covers")
     example_angles: list[str] = Field(description="3-5 concrete post angles inside this area")
 
@@ -40,7 +40,7 @@ class ResearchBrief(BaseModel):
         description="Under-discussed, disputed or practitioner-level angles worth taking"
     )
     practitioner_hooks: list[str] = Field(
-        description="Specific details an AppSec practitioner would recognise as real"
+        description="Specific details a practitioner in the author's field would recognise as real"
     )
 
 

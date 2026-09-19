@@ -26,7 +26,7 @@ from postgen.store.db import Store
 
 PROFILE = {
     "name": "Test Author",
-    "headline": "AI Application Security | Product Security",
+    "headline": "Staff Engineer | Platform Reliability",
     "about": "I break and fix AI-enabled applications for a living.",
 }
 
@@ -138,7 +138,7 @@ def settings(data_dir: Path) -> Settings:
     return Settings(  # type: ignore[call-arg]
         data_dir=data_dir,
         allowed_hosts="testserver,localhost",
-        anthropic_api_key="sk-ant-test-key-0000",
+        anthropic_api_key="not-a-real-key-0000",
         tavily_api_key=None,
         _env_file=None,
     )
