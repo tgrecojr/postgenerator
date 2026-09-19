@@ -80,7 +80,7 @@ def test_readiness_checks(settings: Settings, monkeypatch: pytest.MonkeyPatch) -
     assert not by_key["api_key"].ok and by_key["profile"].ok and by_key["corpus"].ok
     assert "2 post" in by_key["corpus"].detail and not by_key["topics"].required
     assert not is_ready(settings)
-    settings.anthropic_api_key = "sk-ant-x"
+    settings.anthropic_api_key = "fake-key"
     assert is_ready(settings)
     settings.research_provider = "tavily"
     assert not is_ready(settings) and "Tavily API key" in {c.label for c in checks(settings)}

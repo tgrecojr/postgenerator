@@ -18,7 +18,7 @@ class Profile(BaseModel):
     headline: str
     about: str
     audience: str = Field(
-        default="Security engineers, AppSec leaders, and engineering managers",
+        default="Practitioners, leaders, and hiring managers in the author's field",
         description="Who the posts are written for",
     )
     goals: str = Field(

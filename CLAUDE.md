@@ -17,7 +17,7 @@ There is no operational CLI: every lifecycle step (profile, corpus, topics, gene
 review, voice, jobs, settings, export) is a page in the web UI. `postgen` only serves.
 - `.venv/bin/postgen [--reload]` — web UI on http://127.0.0.1:8790 (data in `./data`)
 - `docker compose up -d --build` — the self-hosted deployment (Chainguard, non-root)
-- Pushes to `main` publish `ghcr.io/tgrecojr/postgen` (signed, SBOM + provenance attested)
+- Pushes to `main` publish `ghcr.io/tgrecojr/postgenerator` (signed, SBOM + provenance attested)
 - `scripts/import-data.sh ./data` — one-time copy of a local data dir into the volume
 - `.venv/bin/ruff check . && .venv/bin/ruff format --check .` — lint
 - `.venv/bin/mypy` — type check
