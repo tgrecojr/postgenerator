@@ -81,7 +81,10 @@ jobs:
           upload-artifact: false
           upload-release-assets: false
 
+      # GitHub attestations are unavailable on user-owned private repositories; the
+      # steps below self-skip while this repo is private and run once it is public.
       - name: Attest SBOM
+        if: ${{ !github.event.repository.private }}
         uses: actions/attest@v4
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -90,6 +93,7 @@ jobs:
           push-to-registry: true
 
       - name: Attest build provenance
+        if: ${{ !github.event.repository.private }}
         uses: actions/attest-build-provenance@v4
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
