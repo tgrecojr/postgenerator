@@ -92,3 +92,11 @@ locally, replace `build: .` in `compose.yaml` with `image: ghcr.io/tgrecojr/post
 - Web research content is treated as untrusted data in every prompt; it is never given
   instruction authority.
 - Secrets come only from the environment. `data/` and `.env` are git-ignored.
+
+## Contributing
+
+Issues and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+## License
+
+Released under the [MIT License](LICENSE).
