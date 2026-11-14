@@ -33,7 +33,8 @@ review, voice, jobs, settings, export) is a page in the web UI. `postgen` only s
 - `src/postgen/prompts/*.md.j2` — one Jinja2 template per step and role
 - `src/postgen/store/` — `db.py` (SQLite runs/drafts/reviews, lock + WAL), `jobs.py`
   (persisted background jobs), `stats.py` (dashboard queries), `corpus.py` (markdown posts,
-  edit/delete/import, BM25-lite exemplar retrieval), `profile.py` (profile/topics/voice files)
+  edit/delete/import, BM25-lite exemplar retrieval), `profile.py` (profile/topics/voice files),
+  `atomic.py` (`write_text_atomic`: every data-file write goes through it, never `write_text`)
 - `src/postgen/services/` — `jobs.py` (one-at-a-time JobRunner on a thread), `setup.py`
   (readiness checklist that gates Generate), `diagnostics.py` (settings view, key test)
 - `src/postgen/review.py` — approve/edit/reject → reviews table + corpus append
