@@ -9,6 +9,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 from postgen.pipeline.models import TopicMap, VoiceProfile
+from postgen.store.atomic import write_text_atomic
 
 TOPICS_HEADER = "# Generated from your profile. Edit freely; rebuild from the Topics page.\n"
 
@@ -38,11 +39,10 @@ def load_profile(path: Path) -> Profile:
 
 
 def save_profile(path: Path, profile: Profile) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
+    write_text_atomic(
+        path,
         "# Your LinkedIn profile. Edited from the Profile page in the web UI.\n"
         + yaml.safe_dump(profile.model_dump(), sort_keys=False, allow_unicode=True),
-        encoding="utf-8",
     )
 
 
@@ -69,8 +69,7 @@ def topics_from_yaml(text: str) -> TopicMap:
 
 
 def save_topics(path: Path, topics: TopicMap) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(TOPICS_HEADER + topics_to_yaml(topics), encoding="utf-8")
+    write_text_atomic(path, TOPICS_HEADER + topics_to_yaml(topics))
 
 
 class VoiceState(BaseModel):
@@ -87,6 +86,5 @@ def load_voice(path: Path) -> VoiceState | None:
 
 
 def save_voice(path: Path, state: VoiceState) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(state.profile.render(), encoding="utf-8")
-    path.with_suffix(".json").write_text(json.dumps(state.model_dump(), indent=2), encoding="utf-8")
+    write_text_atomic(path, state.profile.render())
+    write_text_atomic(path.with_suffix(".json"), json.dumps(state.model_dump(), indent=2))

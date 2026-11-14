@@ -12,6 +12,8 @@ from pathlib import Path
 
 import yaml
 
+from postgen.store.atomic import write_text_atomic
+
 FRONT_MATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 TOKEN = re.compile(r"[a-z0-9][a-z0-9+\-#]{2,}")
 SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$")
@@ -137,7 +139,7 @@ class Corpus:
         if topic:
             meta["topic"] = topic
         front = yaml.safe_dump(meta, sort_keys=True).strip()
-        path.write_text(f"---\n{front}\n---\n\n{text.strip()}\n", encoding="utf-8")
+        write_text_atomic(path, f"---\n{front}\n---\n\n{text.strip()}\n")
         return path
 
     def remove(self, path: Path | str) -> None:
@@ -167,7 +169,7 @@ class Corpus:
             meta["topic"] = topic
         front = yaml.safe_dump(meta, sort_keys=True).strip() if meta else ""
         head = f"---\n{front}\n---\n\n" if front else ""
-        path.write_text(f"{head}{text.strip()}\n", encoding="utf-8")
+        write_text_atomic(path, f"{head}{text.strip()}\n")
         return _parse(path)
 
     def delete(self, slug: str) -> bool:
@@ -189,7 +191,7 @@ class Corpus:
         if FRONT_MATTER.match(content):
             stem = re.sub(r"[^A-Za-z0-9._-]+", "-", Path(filename).stem).strip("-.") or "post"
             path = self._unique_path(stem[:60])
-            path.write_text(content.strip() + "\n", encoding="utf-8")
+            write_text_atomic(path, content.strip() + "\n")
             return path
         return self.add(content, source="seed")
 
